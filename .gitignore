@@ -1,3 +1,9 @@
-*
-!.gitignore
+# directories
+/bin
 /include
+/__pycache__
+/lib*
+/share
+# files
+pyvenv.cfg
+!.gitignore
