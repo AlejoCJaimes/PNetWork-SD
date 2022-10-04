@@ -1,59 +1,48 @@
 """This class paint the graph about Petri Network"""
 import graphviz
-import random
+from Petri import *
+from PetriEngine import *
 
-def plot_graph():
-  f = graphviz.Digraph('wide')
-  f.attr(rankdir='LR', size='10,8')
-
-  # transitions
-  f.attr('node',shape='signature')
-  for x in range(1,5):
-    f.node(f't{x}',style='filled', fillcolor='#2ECC71')
-
-  # places
-  f.attr('node', shape='doublecircle')
-  for x in range(1,6):
-    f.node(name=f'P{x}',label=f'{random.randint(1,5)}',xlabel=f'P{x}')
-
-  #inputs
-  f.edge('P1','t1',label='<<font point-size="10">1</font>>')
-  f.edge('P2','t2',label='<<font point-size="10">1</font>>')
-  f.edge('P3','t2',label='<<font point-size="10">1</font>>')
-  f.edge('P4','t2',label='<<font point-size="10">1</font>>')
-  f.edge('P4','t3',label='<<font point-size="10">2</font>>')
-  f.edge('P5','t4',label='<<font point-size="10">1</font>>')
-
-  #outputs
-  f.edge('t1','P4',label='<<font point-size="10">2</font>>')
-  f.edge('t1','P3',label='<<font point-size="10">1</font>>')
-  f.edge('t1','P2',label='<<font point-size="10">1</font>>')
-  f.edge('t2','P2',label='<<font point-size="10">1</font>>')
-  f.edge('t3','P5',label='<<font point-size="10">1</font>>')
-  f.edge('t4','P4',label='<<font point-size="10">1</font>>')
-  f.edge('t4','P3',label='<<font point-size="10">1</font>>')
-
-  #title
-  f.attr(label=r'\n\Transitions t1, t3, t4\nare enabled')
-  return f
-def plot_mat():
-    import matplotlib.pyplot as plt
-
-    fig, ax = plt.subplots()
-
-    fruits = ['apple', 'blueberry', 'cherry', 'orange']
-    counts = [40, 100, 30, 55]
-    bar_labels = ['red', 'blue', '_red', 'orange']
-    bar_colors = ['tab:red', 'tab:blue', 'tab:red', 'tab:orange']
-
-    ax.bar(fruits, counts, label=bar_labels, color=bar_colors)
-
-    ax.set_ylabel('fruit supply')
-    ax.set_title('Fruit supply by kind and color')
-    ax.legend(title='Fruit color')
-
-    plt.show()
-if __name__=='__main__':
-    # r = plot_graph()
-    # r
-    plot_mat()
+class Graphic:
+  def __init__(self,petri:PetriNetwork):
+    self._petri = petri 
+    self._pnet = PetriEngine(petri)
+    
+  def plot_graph(self,_name='wide',_rankdir='LR',
+                 _size='10,8',_shapet='signature',_shapep='doublecircle'):
+    # initial parameters
+    f = graphviz.Digraph(name=_name)
+    f.attr(rankdir=_rankdir, size=_size)
+    
+    # Create transitions
+    f.attr('node',shape=_shapet)
+    for t in self._petri._transitions:
+      if self._pnet.check_state_transition(t._transition):
+        f.node(t._transition,style='filled', fillcolor='#2ECC71')
+      else:
+        f.node(t._transition,style='filled', fillcolor='#E74C3C')
+    t_enable = f'\n\Transitions{self._pnet.check_enable_transitions()}\nare enabled'
+    
+    # Create places
+    f.attr('node', shape=_shapep)
+    for p in self._petri._places:
+      f.node(name=p._pname,label=str(p._tokens),xlabel=p._pname)
+    
+    # Create inputs
+    for input in self._petri._inputs:
+      p=input._places._pname
+      t=input._transitions._transition
+      i=input._inputs
+      f.edge(p,t,label=f'<<font point-size="10">{i}</font>>')
+    
+    # Create outputs      
+    for output in self._petri._outputs:
+      p=output._places._pname
+      t=output._transitions._transition
+      o=output._outputs
+      f.edge(t,p,label=f'<<font point-size="10">{o}</font>>')
+      
+    f.attr(label=rf'{t_enable}')  
+    return f
+    
+    
