@@ -97,7 +97,7 @@ class PetriEngine:
     def check_enable_transitions(self):
         transitions = self._pnet._transitions
         available = np.array([t._transition for t in transitions if self.check_state_transition(t._transition)])
-        print(f"Transiciones disponibles: {available}")
+        return available
     
     def next_transition(self, t_name: str):
         self.shoot_transition(t_name)

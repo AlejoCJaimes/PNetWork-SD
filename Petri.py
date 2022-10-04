@@ -3,6 +3,19 @@ Transitions, Places, Inputs(t) and Outputs(t)"""
 import numpy as np
 import json
 import os 
+
+# Utilities
+class NpEncoder(json.JSONEncoder):
+    """ custom encoder to solve json dumps problems
+    because json dont recognized numpy values"""
+    def default(self, obj):
+        if isinstance(obj, np.integer):
+            return int(obj)
+        if isinstance(obj, np.floating):
+            return float(obj)
+        if isinstance(obj, np.ndarray):
+            return obj.tolist()
+        return super(NpEncoder, self).default(obj)
 # Basic Class
 class Transitions:
     def __init__(self, transition:str):
@@ -174,6 +187,7 @@ class PetriNetwork:
     
     def json_export(self, filename:str):
         """ Export json with indent=3ptos """      
+        
         json_dic = {}
         json_dic = {
         "places" : {"names": [p._pname for p in self._places], 
@@ -199,12 +213,12 @@ class PetriNetwork:
                      "arc" :[output._outputs for output in self._outputs]
                    },
         }
-        # Serializing json  
-        json_object = json.dumps(json_dic, indent = 3) 
+        # # Serializing json  
+        json_object = json.dumps(json_dic, indent = 4, cls=NpEncoder) 
         
         # export in route
         file_dir = os.path.dirname(os.path.realpath('__file__'))
-        file_name = os.path.join(file_dir,f'./json/export/{filename}+_shot.json')
+        file_name = os.path.join(file_dir,f'./json/export/{filename}_shot.json')
         file_name = os.path.abspath(os.path.realpath(file_name))
         
         # saving json
